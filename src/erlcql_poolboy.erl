@@ -23,11 +23,8 @@
 %% @author Krzysztof Rutka <krzysztof.rutka@gmail.com>
 -module(erlcql_poolboy).
 
--export([start_link/2,
-         start_link/3]).
--export([q/2, 'query'/2, q/3, 'query'/3,
-         e/3, execute/3, e/4, execute/4,
-         p/3, prepare/3]).
+-export([start_link/2, start_link/3]).
+-export(['query'/2, 'query'/3, execute/3, execute/4, prepare/3]).
 
 -spec start_link(atom(), proplists:proplist()) ->
           {ok, pid()} | {error, term()}.
@@ -46,15 +43,9 @@ start_link(Name, SizeOpts, WorkerOpts) ->
                 {worker_module, erlcql_client}],
     poolboy:start_link(PoolOpts ++ SizeOpts, WorkerOpts2).
 
-q(PoolName, Query) ->
-    q(PoolName, Query, erlcql:default(consistency)).
-
 -spec 'query'(atom(), iodata()) -> erlcql:response().
 'query'(PoolName, Query) ->
     'query'(PoolName, Query, erlcql:default(consistency)).
-
-q(PoolName, Query, Consistency) ->
-    'query'(PoolName, Query, Consistency).
 
 -spec 'query'(atom(), iodata(), erlcql:consistency()) -> erlcql:response().
 'query'(PoolName, Query, Consistency) ->
@@ -62,9 +53,6 @@ q(PoolName, Query, Consistency) ->
                   erlcql_client:async_query(Worker, Query, Consistency)
           end,
     poolboy_call(PoolName, Fun).
-
-p(PoolName, Query, Name) ->
-    prepare(PoolName, Query, Name).
 
 -spec prepare(atom(), iodata(), atom()) -> erlcql:response().
 prepare(PoolName, Query, Name) ->
@@ -85,15 +73,9 @@ prepare_rest(PoolName, Worker, Query, QueryId) ->
     {ok, QueryId} = erlcql_client:prepare(Worker, Query),
     ok = poolboy:checkin(PoolName, Worker).
 
-e(PoolName, QueryId, Values) ->
-    execute(PoolName, QueryId, Values, erlcql:default(consistency)).
-
 -spec execute(atom(), erlcql:uuid() | atom(), [binary()]) -> erlcql:response().
 execute(PoolName, QueryId, Values) ->
     execute(PoolName, QueryId, Values, erlcql:default(consistency)).
-
-e(PoolName, QueryId, Values, Consistency) ->
-    execute(PoolName, QueryId, Values, Consistency).
 
 -spec execute(atom(), erlcql:uuid() | atom(),
               [binary()], erlcql:consistency()) -> erlcql:response().
