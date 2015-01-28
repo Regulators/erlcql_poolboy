@@ -34,14 +34,9 @@ start_link(Name, SizeOpts) ->
 -spec start_link(atom(), proplists:proplist(), proplists:proplist()) ->
           {ok, pid()} | {error, term()}.
 start_link(Name, SizeOpts, WorkerOpts) ->
-    Tid = ets:new(erlcql_poolboy_prepared, [set, public,
-                                            {read_concurrency, true}]),
-    Key = prepared_statements_ets_tid,
-    WorkerOpts2 = lists:keystore(Key, 1, WorkerOpts, {Key, Tid}),
-
-    PoolOpts = [{name, {local, Name}},
-                {worker_module, erlcql_client}],
-    poolboy:start_link(PoolOpts ++ SizeOpts, WorkerOpts2).
+    PrePreparedEts = erlcql_opts:pre_prepared_ets(),
+    PoolOpts = [{name, {local, Name}}, {worker_module, erlcql_client}],
+    poolboy:start_link(PoolOpts ++ SizeOpts, [ PrePreparedEts | WorkerOpts ]).
 
 -spec query(atom(), iodata()) -> erlcql:response().
 query(PoolName, Query) ->
