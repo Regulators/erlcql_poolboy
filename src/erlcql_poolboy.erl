@@ -24,7 +24,7 @@
 -module(erlcql_poolboy).
 
 -export([start_link/2, start_link/3]).
--export(['query'/2, 'query'/3, execute/3, execute/4, prepare/3]).
+-export([query/2, query/3, execute/3, execute/4, prepare/3]).
 
 -spec start_link(atom(), proplists:proplist()) ->
           {ok, pid()} | {error, term()}.
@@ -43,12 +43,12 @@ start_link(Name, SizeOpts, WorkerOpts) ->
                 {worker_module, erlcql_client}],
     poolboy:start_link(PoolOpts ++ SizeOpts, WorkerOpts2).
 
--spec 'query'(atom(), iodata()) -> erlcql:response().
-'query'(PoolName, Query) ->
-    'query'(PoolName, Query, erlcql:default(consistency)).
+-spec query(atom(), iodata()) -> erlcql:response().
+query(PoolName, Query) ->
+    query(PoolName, Query, erlcql:default(consistency)).
 
--spec 'query'(atom(), iodata(), erlcql:consistency()) -> erlcql:response().
-'query'(PoolName, Query, Consistency) ->
+-spec query(atom(), iodata(), erlcql:consistency()) -> erlcql:response().
+query(PoolName, Query, Consistency) ->
     Fun = fun(Worker) ->
                   erlcql_client:async_query(Worker, Query, Consistency)
           end,
